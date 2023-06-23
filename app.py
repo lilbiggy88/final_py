@@ -1,10 +1,11 @@
-from flask import Flask, render_template, url_for, redirect
+from flask import Flask, render_template, url_for, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user 
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask_bcrypt import Bcrypt
+from datetime import datetime, timedelta
 
 
 app = Flask(__name__)
@@ -87,6 +88,30 @@ def signup():
         return redirect(url_for('login'))
 
     return render_template('signup.html', form=form)
+
+
+@app.route('/scheduler', methods=['GET', 'POST'])
+@login_required
+def scheduler():
+    if request.method == 'POST':
+        times = request.form.getlist('time[]')
+        texts = request.form.getlist('text[]')
+        
+        # Process the times and texts here
+        
+        return render_template('scheduler.html', times=times, texts=texts)
+    
+    start_time = datetime.strptime("12:00 AM", "%I:%M %p")  # Start time (12:00 AM)
+    end_time = datetime.strptime("11:55 PM", "%I:%M %p")  # End time (11:55 PM)
+    interval = timedelta(minutes=5)  # Time interval (5 minutes)
+    
+    times = []
+    current_time = start_time
+    while current_time <= end_time:
+        times.append(current_time.strftime("%I:%M %p"))
+        current_time += interval
+    
+    return render_template('scheduler.html', times=times)
 
 
 if __name__ == '__main__':
