@@ -20,6 +20,16 @@ login_manager.init_app(app)
 login_manager.login_view = "login"
 
 
+class FormData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    time = db.Column(db.String(10))
+    text = db.Column(db.String(100))
+
+db.create_all()
+
+
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -61,12 +71,31 @@ def login():
             if bcrypt.check_password_hash(user.password, form.password.data):
                 login_user(user)
                 return redirect(url_for('dashboard'))
+            
     return render_template('login.html', form=form)
 
 
 @app.route('/dashboard', methods=['GET', 'POST'] )
 @login_required
 def dashboard():
+
+   data = FormData.query.all()
+   return render_template('dashboard.html', data=data)
+
+def get_time_options():
+    times = []
+    start_hour = 0
+    end_hour = 23
+    interval = 15
+
+    for hour in range(start_hour, end_hour + 1):
+        for minute in range(0, 60, interval):
+            formatted_hour = str(hour).zfill(2)
+            formatted_minute = str(minute).zfill(2)
+            time = f'{formatted_hour}:{formatted_minute}'
+            times.append(time)
+
+    return times
     return render_template('dashboard.html')
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -93,25 +122,20 @@ def signup():
 @app.route('/scheduler', methods=['GET', 'POST'])
 @login_required
 def scheduler():
+
     if request.method == 'POST':
         times = request.form.getlist('time[]')
         texts = request.form.getlist('text[]')
-        
-        # Process the times and texts here
-        
-        return render_template('scheduler.html', times=times, texts=texts)
-    
-    start_time = datetime.strptime("12:00 AM", "%I:%M %p")  # Start time (12:00 AM)
-    end_time = datetime.strptime("11:55 PM", "%I:%M %p")  # End time (11:55 PM)
-    interval = timedelta(minutes=5)  # Time interval (5 minutes)
-    
-    times = []
-    current_time = start_time
-    while current_time <= end_time:
-        times.append(current_time.strftime("%I:%M %p"))
-        current_time += interval
-    
-    return render_template('scheduler.html', times=times)
+
+        # Store submitted data in the database
+        for i in range(len(times)):
+            form_data = FormData(time=times[i], text=texts[i])
+            db.session.add(form_data)
+        db.session.commit()
+
+        return redirect('/dashboard')
+
+    return render_template('scheduler.html', times=get_time_options())
 
 
 if __name__ == '__main__':

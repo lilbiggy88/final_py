@@ -9,6 +9,29 @@
 <body>
     <h1>Hello! You are logged in!</h1>
 
+    <form method="POST" action="/">
+        <div id="lines">
+          {% for line in data %}
+            <div class="line">
+              <select name="time[]">
+                {% for time in times %}
+                  <option value="{{ time }}" {% if time == line.time %}selected{% endif %}>{{ time }}</option>
+                {% endfor %}
+              </select>
+              <input type="text" name="text[]" value="{{ line.text }}">
+              <button type="button" class="delete-btn" onclick="deleteLine(this)">Delete</button>
+            </div>
+          {% endfor %}
+        </div>
+        <button type="button" onclick="addLine()">Add Line</button>
+        <input type="submit" value="Submit">
+      </form>
+      
+      <script>
+        // JavaScript code for adding and deleting lines...
+      </script>
+      
+
    <a href="{{ url_for ('scheduler' )}}">Click here to create a new schedule!</a>
     <br>
     <a href="{{ url_for ( 'logout' )}}">Press here to logout!</a>
