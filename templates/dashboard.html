@@ -1,35 +1,45 @@
+{% extends 'base.html' %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    {% block title %}Dashboard{% endblock %}
 </head>
+{% block content %}
 <body>
-    <h1>Hello! You are logged in!</h1>
+    <h1>Hello! Welcome to your Dashboard!</h1>
 
-    <form method="POST" action="/">
-        <div id="lines">
-          {% for line in data %}
-            <div class="line">
-              <select name="time[]">
-                {% for time in times %}
-                  <option value="{{ time }}" {% if time == line.time %}selected{% endif %}>{{ time }}</option>
-                {% endfor %}
-              </select>
-              <input type="text" name="text[]" value="{{ line.text }}">
-              <button type="button" class="delete-btn" onclick="deleteLine(this)">Delete</button>
-            </div>
-          {% endfor %}
-        </div>
-        <button type="button" onclick="addLine()">Add Line</button>
-        <input type="submit" value="Submit">
-      </form>
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Time</th>
+          <th>Text</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in data %}
+        <tr>
+          <td>{{ item.title }}</td>
+          <td>{{ item.time }}</td>
+          <td>{{ item.text }}</td>
+          <td>
+            <form action="{{ url_for('delete_entries', item_id=item.id) }}" method="POST">
+              <button type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    
+
+
+  <br>
       
-      <script>
-        // JavaScript code for adding and deleting lines...
-      </script>
       
 
    <a href="{{ url_for ('scheduler' )}}">Click here to create a new schedule!</a>
@@ -37,4 +47,5 @@
     <a href="{{ url_for ( 'logout' )}}">Press here to logout!</a>
     <br>
 </body>
+{% endblock %}
 </html>
