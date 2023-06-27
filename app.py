@@ -71,6 +71,9 @@ def login():
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
+    data = FormData.query.all()
+    username = current_user.username
+    
     if request.method == 'POST':
         item_id = request.form.get('item_id')
         item = FormData.query.get(item_id)
@@ -79,8 +82,8 @@ def dashboard():
             db.session.delete(item)
             db.session.commit()
 
-    data = FormData.query.all()
-    return render_template('dashboard.html', data=data)
+    
+    return render_template('dashboard.html', data=data, username=username)
 
 @app.route('/scheduler', methods=['GET', 'POST'])
 @login_required

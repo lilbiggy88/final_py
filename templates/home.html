@@ -10,11 +10,17 @@
     {% block title %}Home{% endblock %}
 </head>
 {% block content %}
-<body>
-    <h1>Welcome to The Scheduler! Please Log In to Access Your Schedules!</h1>
-    <a href="{{ url_for ( 'login' )}}">Login Page</a>
-    <br>
-    <a href="{{ url_for ( 'signup' )}}">Sign Up Page</a>
+
+<div class="container">
+    <div class="box">
+      <h2>Welcome to the Scheduler!</h2>
+      <p>Please sign up or sign in to access your dashboard.</p>
+      <div class="buttons">
+        <a href="{{ url_for('signup') }}" class="btn btn-primary">Sign Up</a>
+        <a href="{{ url_for('login') }}" class="btn btn-primary">Sign In</a>
+      </div>
+    </div>
+  </div>
 
 </body>
 {% endblock %}

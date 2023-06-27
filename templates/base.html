@@ -1,29 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}The Scheduler!{% endblock %}</title>
-     <!-- CSS and other common static files -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+  <title>{% block title %}Base{% endblock %}</title>
 </head>
 <body>
-        <header>
-            <!-- Common header content -->
-        </header>
-    
-        <nav>
-            <!-- Common navigation menu -->
-        </nav>
-    
-        <main>
-            {% block content %}{% endblock %}
-        </main>
-    
-        <footer>
-            <!-- Common footer content -->
-        </footer>
-    
-        <!-- JavaScript and other common static files -->
+  <!-- Navbar -->
+  <div class="navbar">
+    <a href="/">Home</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/scheduler">Scheduler</a>
+    <a href="/login">Login</a>
+  </div>
+
+  <!-- Content section -->
+  <div class="content">
+    {% block content %}
+    <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/dashboard">Dashboard</a></li>
+          {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+          {% else %}
+          <li><a href="{{ url_for('login') }}">Login</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endblock %}
+  </div>
 </body>
 </html>

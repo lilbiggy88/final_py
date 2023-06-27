@@ -9,7 +9,7 @@
 </head>
 {% block content %}
 <body>
-    <h1>Hello! Welcome to your Dashboard!</h1>
+    <h1>Hello, {{ username }}! Welcome to your Dashboard!</h1>
 
     <table>
       <thead>
@@ -41,10 +41,11 @@
   <br>
       
       
-
-   <a href="{{ url_for ('scheduler' )}}">Click here to create a new schedule!</a>
+  <br><br><br>
+   <a href="{{ url_for ('scheduler' )}}" class="btn btn-primary">Create a new schedule!</a>
     <br>
-    <a href="{{ url_for ( 'logout' )}}">Press here to logout!</a>
+    <br>
+    <a href="{{ url_for ( 'logout' )}}" class="btn btn-primary">Logout</a>
     <br>
 </body>
 {% endblock %}
