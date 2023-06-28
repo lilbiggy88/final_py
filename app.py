@@ -6,10 +6,13 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask_bcrypt import Bcrypt
 from datetime import datetime, timedelta
+from flask_migrate import Migrate
+
 
 
 app = Flask(__name__)
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SECRET_KEY'] = 'thisisasecretkey'
@@ -24,18 +27,24 @@ def load_user(user_id):
 
 
 class User(db.Model, UserMixin):
+    __tablename__ = 'users'
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False, unique=True)
     password = db.Column(db.String(80), nullable=False)
 
+    schedules = db.relationship('Schedule', backref='user', lazy=True)
 
-class FormData(db.Model):
+
+class Schedule(db.Model):
+    __tablename__ = 'schedules'
+    
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100))
-    time = db.Column(db.String(10))
-    text = db.Column(db.String(100))
+    title = db.Column(db.String(100), nullable=False)
+    time = db.Column(db.String(100), nullable=False)
+    text = db.Column(db.String(500), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-db.create_all()
 
 class RegisterForm(FlaskForm):
     username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
@@ -52,9 +61,12 @@ class LoginForm(FlaskForm):
     password = PasswordField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Password"})
     submit = SubmitField("Login!")
 
+
+
 @app.route('/', methods=['GET', 'POST'])
 def home():
     return render_template('home.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -71,19 +83,19 @@ def login():
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    data = FormData.query.all()
-    username = current_user.username
-    
+
+    user_schedules = Schedule.query.filter_by(user_id=current_user.id).all()
+
     if request.method == 'POST':
         item_id = request.form.get('item_id')
-        item = FormData.query.get(item_id)
+        item = Schedule.query.get(item_id)
 
         if item:
             db.session.delete(item)
             db.session.commit()
 
     
-    return render_template('dashboard.html', data=data, username=username)
+    return render_template('dashboard.html', schedules=user_schedules)
 
 @app.route('/scheduler', methods=['GET', 'POST'])
 @login_required
@@ -123,7 +135,7 @@ def scheduler():
         texts = request.form.getlist('text[]')
 
         for i in range(len(times)):
-            form_data = FormData(title=title if i == 0 else "", time=times[i], text=texts[i])
+            form_data = Schedule(title=title if i == 0 else "", time=times[i], text=texts[i], user_id=current_user.id)
             db.session.add(form_data)
             db.session.commit()
 
@@ -132,14 +144,24 @@ def scheduler():
     return render_template('scheduler.html', times=get_time_options())
 
 
-@app.route('/delete/<int:item_id>', methods=['POST'])
+@app.route('/delete-schedule/<int:schedule_id>', methods=['POST'])
 @login_required
-def delete_entries(item_id):
-    item = FormData.query.get_or_404(item_id)
-    db.session.delete(item)
+def delete_schedule(schedule_id):
+    schedule = Schedule.query.get_or_404(schedule_id)
+    db.session.delete(schedule)
     db.session.commit()
-    flash('Entry deleted successfully.', 'success')
+    flash('Schedule deleted successfully.', 'success')
     return redirect(url_for('dashboard'))
+
+@app.route('/delete-all-schedules', methods=['POST'])
+@login_required
+def delete_all_schedules():
+    Schedule.query.filter_by(user_id=current_user.id).delete()
+    db.session.commit()
+    flash('All schedules deleted successfully.', 'success')
+    return redirect(url_for('dashboard'))
+
+
 
 
 @app.route('/logout', methods=['GET', 'POST'])

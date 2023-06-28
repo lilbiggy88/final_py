@@ -1,52 +1,41 @@
 {% extends 'base.html' %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% block title %}Dashboard{% endblock %}
-</head>
+
+{% block title %}Dashboard{% endblock %}
+
 {% block content %}
-<body>
-    <h1>Hello, {{ username }}! Welcome to your Dashboard!</h1>
+  <h1>Hello, {{ current_user.username }}!</h1>
+  <h2>Your Schedules</h2>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Time</th>
-          <th>Text</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in data %}
-        <tr>
-          <td>{{ item.title }}</td>
-          <td>{{ item.time }}</td>
-          <td>{{ item.text }}</td>
-          <td>
-            <form action="{{ url_for('delete_entries', item_id=item.id) }}" method="POST">
-              <button type="submit">Delete</button>
+  {% if schedules %}
+    <div class="schedule-table">
+      <div class="schedule-row header">
+        <div class="schedule-cell">Title</div>
+        <div class="schedule-cell">Time</div>
+        <div class="schedule-cell">Text</div>
+        <div class="schedule-cell">Actions</div>
+      </div>
+      {% for schedule in schedules %}
+        <div class="schedule-row">
+          <div class="schedule-cell">{{ schedule.title }}</div>
+          <div class="schedule-cell">{{ schedule.time }}</div>
+          <div class="schedule-cell">{{ schedule.text }}</div>
+          <div class="schedule-cell">
+            <form action="{{ url_for('delete_schedule', schedule_id=schedule.id) }}" method="POST">
+              <button type="submit" class="btn btn-delete">Delete</button>
             </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    
-
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No schedules found.</p>
+  {% endif %}
 
   <br>
-      
-      
-  <br><br><br>
-   <a href="{{ url_for ('scheduler' )}}" class="btn btn-primary">Create a new schedule!</a>
-    <br>
-    <br>
-    <a href="{{ url_for ( 'logout' )}}" class="btn btn-primary">Logout</a>
-    <br>
-</body>
+
+  <a href="{{ url_for('scheduler') }}" class="btn btn-primary">Create a new schedule!</a>
+  <br>
+  <br>
+  <a href="{{ url_for('logout') }}" class="btn btn-primary">Logout</a>
+  <br>
 {% endblock %}
-</html>

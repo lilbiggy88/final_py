@@ -14,10 +14,13 @@
     <form method="POST" action="">
         {{ form.hidden_tag() }}
         {{ form.username }}
+        <br><br>
         {{ form.password }}
+        <br><br>
         {{ form.submit }}
     </form>
-    <a href="{{ url_for ( 'login' )}}">Already have an account? Sign in!</a>
+    <br><br>
+    <a href="{{ url_for ( 'login' )}}" class="btn btn-primary">Already have an account? Sign in!</a>
 </body>
 {% endblock %}
 </html>
