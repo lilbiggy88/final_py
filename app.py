@@ -26,6 +26,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
@@ -65,7 +66,23 @@ class LoginForm(FlaskForm):
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
+
     return render_template('home.html')
+
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    form = RegisterForm()
+
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data)
+        new_user = User(username=form.username.data, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        return redirect(url_for('login'))
+
+    return render_template('signup.html', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -76,8 +93,18 @@ def login():
         if user:
             if bcrypt.check_password_hash(user.password, form.password.data):
                 login_user(user)
+
                 return redirect(url_for('dashboard'))
+            
     return render_template('login.html', form=form)
+
+
+@app.route('/logout', methods=['GET', 'POST'])
+@login_required
+def logout():
+    logout_user()
+
+    return redirect(url_for('login'))
 
 
 @app.route('/dashboard', methods=['GET', 'POST'])
@@ -94,8 +121,8 @@ def dashboard():
             db.session.delete(item)
             db.session.commit()
 
-    
     return render_template('dashboard.html', schedules=user_schedules)
+
 
 @app.route('/scheduler', methods=['GET', 'POST'])
 @login_required
@@ -116,6 +143,7 @@ def scheduler():
             '8:00 PM', '8:15 PM', '8:30 PM', '8:45 PM', '9:00 PM', '9:15 PM', '9:30 PM', '9:45 PM',
             '10:00 PM', '10:15 PM', '10:30 PM', '10:45 PM', '11:00 PM', '11:15 PM', '11:30 PM', '11:45 PM'
         ]
+
         start_hour = 0
         end_hour = 23
         interval = 15
@@ -150,7 +178,9 @@ def delete_schedule(schedule_id):
     schedule = Schedule.query.get_or_404(schedule_id)
     db.session.delete(schedule)
     db.session.commit()
+
     flash('Schedule deleted successfully.', 'success')
+
     return redirect(url_for('dashboard'))
 
 @app.route('/delete-all-schedules', methods=['POST'])
@@ -158,30 +188,12 @@ def delete_schedule(schedule_id):
 def delete_all_schedules():
     Schedule.query.filter_by(user_id=current_user.id).delete()
     db.session.commit()
+
     flash('All schedules deleted successfully.', 'success')
+
     return redirect(url_for('dashboard'))
 
 
-
-
-@app.route('/logout', methods=['GET', 'POST'])
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('login'))
-
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    form = RegisterForm()
-
-    if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data)
-        new_user = User(username=form.username.data, password=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('login'))
-
-    return render_template('signup.html', form=form)
 
 if __name__ == '__main__':
     app.run(debug=True)
